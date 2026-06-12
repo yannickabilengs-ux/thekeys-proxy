@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Keys — Démo IA · Génération de Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:   #38BDF8;
+    --gold-l: #7DD3FC;
+    --gold-d: #0369A1;
+    --dark:   #0A1628;
+    --navy:   #0F2040;
+    --card:   #162D4E;
+    --white:  #FFFFFF;
+    --light:  #E8EDF2;
+    --muted:  #6B8FAB;
+    --border: #1E3A5F;
+    --teal:   #2DD4BF;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--dark); color:var(--light); font-family:'DM Sans',sans-serif; min-height:100vh; }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.3;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  header {
+    position:relative; z-index:10; display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,rgba(10,22,40,0.95),rgba(8,16,32,0.8));
+    backdrop-filter:blur(12px);
+  }
+  .logo-zone { display:flex; align-items:center; gap:16px; }
+  .logo-bar { width:4px; height:36px; background:var(--gold); border-radius:2px; }
+  .logo-text { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--white); }
+  .logo-sub  { font-size:10px; color:var(--gold); letter-spacing:3px; text-transform:uppercase; font-weight:500; margin-top:2px; }
+  .badge { background:linear-gradient(135deg,var(--gold-d),var(--gold)); color:var(--dark); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:6px 14px; border-radius:20px; }
+
+  main { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:48px 24px 80px; }
+
+  .intro { text-align:center; margin-bottom:44px; animation:fadeUp 0.6s ease both; }
+  .intro-eyebrow { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:12px; }
+  .intro-title { font-family:'Playfair Display',serif; font-size:clamp(26px,4vw,40px); font-weight:700; color:var(--white); line-height:1.2; margin-bottom:14px; }
+  .intro-title span { color:var(--gold); }
+  .intro-desc { font-size:15px; color:var(--muted); max-width:520px; margin:0 auto; line-height:1.7; }
+
+  /* Doc type selector */
+  .doc-selector { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:36px; animation:fadeUp 0.6s 0.1s ease both; }
+  .doc-type {
+    background:var(--navy); border:1px solid var(--border); border-radius:10px;
+    padding:12px 20px; cursor:pointer; transition:all 0.2s; text-align:center;
+    min-width:160px;
+  }
+  .doc-type:hover, .doc-type.active {
+    border-color:var(--gold); background:rgba(56,189,248,0.08);
+  }
+  .doc-type.active .doc-icon { color:var(--gold); }
+  .doc-type.active .doc-name { color:var(--gold-l); }
+  .doc-icon { font-size:22px; display:block; margin-bottom:6px; }
+  .doc-name { font-size:12px; font-weight:600; color:var(--light); letter-spacing:0.5px; }
+
+  .panels { display:grid; grid-template-columns:1fr 1fr; gap:24px; animation:fadeUp 0.6s 0.2s ease both; }
+  @media(max-width:760px){ .panels{grid-template-columns:1fr;} header{padding:16px 20px;} main{padding:32px 16px;} }
+
+  .panel { background:var(--navy); border:1px solid var(--border); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; }
+  .panel-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+  .panel-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .panel-icon.gold-bg { background:rgba(56,189,248,0.12); }
+  .panel-icon.teal-bg { background:rgba(45,212,191,0.10); }
+  .panel-label { font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; }
+  .panel-label.gold { color:var(--gold); }
+  .panel-label.teal { color:var(--teal); }
+  .panel-body { padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px; }
+
+  .field-group { display:flex; flex-direction:column; gap:6px; }
+  .field-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  input, textarea, select {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    color:var(--light); font-family:'DM Sans',sans-serif; font-size:13.5px;
+    padding:11px 14px; outline:none; transition:border-color 0.2s; width:100%;
+  }
+  input:focus, textarea:focus, select:focus { border-color:var(--gold); }
+  input::placeholder, textarea::placeholder { color:var(--muted); }
+  select option { background:var(--card); }
+  textarea { resize:vertical; min-height:100px; line-height:1.6; }
+
+  .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .btn-generate {
+    width:100%; background:linear-gradient(135deg,var(--gold-d),var(--gold));
+    color:var(--dark); border:none; border-radius:10px;
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase; padding:15px 24px;
+    cursor:pointer; transition:all 0.25s; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:4px;
+  }
+  .btn-generate:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(56,189,248,0.3); }
+  .btn-generate:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  /* Output */
+  .output-zone { flex:1; display:flex; flex-direction:column; gap:16px; }
+  .output-placeholder {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; padding:40px 20px; border:1.5px dashed var(--border); border-radius:12px;
+    text-align:center; color:var(--muted); min-height:300px;
+  }
+  .placeholder-icon { font-size:36px; opacity:0.4; }
+  .placeholder-text { font-size:13px; line-height:1.6; max-width:220px; }
+
+  .loading { display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:48px 20px; min-height:300px; }
+  .loading.visible { display:flex; }
+  .loader-ring { width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.9s linear infinite; }
+  @keyframes spin { to{ transform:rotate(360deg); } }
+  .loading-text { font-size:13px; color:var(--muted); text-align:center; line-height:1.6; }
+  .loading-dots { display:flex; gap:6px; justify-content:center; margin-top:8px; }
+  .loading-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); animation:bounce 1.2s ease infinite; }
+  .loading-dot:nth-child(2){ animation-delay:0.15s; }
+  .loading-dot:nth-child(3){ animation-delay:0.3s; }
+  @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4;} 40%{transform:scale(1);opacity:1;} }
+
+  .output-result { display:none; flex-direction:column; gap:14px; animation:fadeUp 0.4s ease both; }
+  .output-result.visible { display:flex; }
+  .result-meta { display:flex; align-items:center; justify-content:space-between; }
+  .result-tag { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--teal); display:flex; align-items:center; gap:6px; }
+  .result-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--teal); display:inline-block; animation:pulse 1.5s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
+  .result-time { font-size:11px; color:var(--muted); }
+  .result-box {
+    background:var(--card); border:1px solid var(--border); border-left:3px solid var(--teal);
+    border-radius:10px; padding:18px 20px; font-size:13px; line-height:1.8;
+    color:var(--light); white-space:pre-wrap; word-break:break-word;
+    min-height:240px; max-height:420px; overflow-y:auto;
+    font-family:'DM Sans',sans-serif;
+  }
+  .result-box::-webkit-scrollbar { width:4px; }
+  .result-box::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+  .result-actions { display:flex; gap:10px; }
+  .btn-copy, .btn-reset {
+    flex:1; background:var(--card); border:1px solid var(--border); border-radius:8px;
+    color:var(--light); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600;
+    padding:10px; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-copy:hover { border-color:var(--teal); color:var(--teal); }
+  .btn-reset:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-copy.copied { border-color:var(--teal); color:var(--teal); }
+
+  /* Stats */
+  .stats-bar {
+    display:flex; align-items:center; justify-content:center; gap:32px;
+    margin-top:40px; padding:22px 32px; background:var(--navy);
+    border:1px solid var(--border); border-radius:14px; animation:fadeUp 0.6s 0.3s ease both; flex-wrap:wrap;
+  }
+  .stat { text-align:center; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:var(--gold); line-height:1; }
+  .stat-label { font-size:11px; color:var(--muted); margin-top:4px; }
+  .stat-divider { width:1px; height:36px; background:var(--border); }
+
+  footer { position:relative; z-index:1; text-align:center; padding:20px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); }
+  footer span { color:var(--gold); font-weight:600; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+  /* Dynamic form sections */
+  .form-section { display:none; flex-direction:column; gap:14px; }
+  .form-section.active { display:flex; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-zone">
+    <div class="logo-bar"></div>
+    <div>
+      <div class="logo-text">The Keys Group</div>
+      <div class="logo-sub">Démo Intelligence Artificielle</div>
+    </div>
+  </div>
+  <div class="badge">📄 Démo 2</div>
+</header>
+
+<main>
+  <div class="intro">
+    <div class="intro-eyebrow">Solution · Génération de Documents</div>
+    <h1 class="intro-title">Vos documents en <span>30 secondes.</span><br>Prêts à envoyer.</h1>
+    <p class="intro-desc">Choisissez le type de document, remplissez quelques champs — l'IA génère un document complet, professionnel et personnalisé.</p>
+  </div>
+
+  <!-- Type selector -->
+  <div class="doc-selector">
+    <div class="doc-type active" onclick="selectDoc(this,'mise_en_demeure')">
+      <span class="doc-icon">⚖️</span>
+      <span class="doc-name">Mise en demeure</span>
+    </div>
+    <div class="doc-type" onclick="selectDoc(this,'onboarding')">
+      <span class="doc-icon">🤝</span>
+      <span class="doc-name">Onboarding locataire</span>
+    </div>
+    <div class="doc-type" onclick="selectDoc(this,'convocation_ag')">
+      <span class="doc-icon">📅</span>
+      <span class="doc-name">Convocation AG</span>
+    </div>
+    <div class="doc-type" onclick="selectDoc(this,'reponse_plainte')">
+      <span class="doc-icon">📝</span>
+      <span class="doc-name">Réponse à plainte</span>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- INPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon gold-bg">✏️</div>
+        <div><div class="panel-label gold">Informations du dossier</div></div>
+      </div>
+      <div class="panel-body">
+
+        <!-- MISE EN DEMEURE -->
+        <div class="form-section active" id="form_mise_en_demeure">
+          <div class="field-group">
+            <div class="field-label">Nom du locataire</div>
+            <input type="text" id="med_locataire" placeholder="ex: Madame Sophie Martin">
+          </div>
+          <div class="row-2">
+            <div class="field-group">
+              <div class="field-label">Adresse du bien</div>
+              <input type="text" id="med_adresse" placeholder="ex: Rue de la Loi 42, 1000 Bruxelles">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Montant dû (€)</div>
+              <input type="text" id="med_montant" placeholder="ex: 1 250 €">
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Motif</div>
+            <select id="med_motif">
+              <option value="loyer impayé">Loyer impayé</option>
+              <option value="charges impayées">Charges impayées</option>
+              <option value="nuisances sonores répétées">Nuisances sonores</option>
+              <option value="dégradations du bien">Dégradations du bien</option>
+              <option value="sous-location non autorisée">Sous-location non autorisée</option>
+            </select>
+          </div>
+          <div class="row-2">
+            <div class="field-group">
+              <div class="field-label">Délai accordé</div>
+              <input type="text" id="med_delai" placeholder="ex: 8 jours">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Période concernée</div>
+              <input type="text" id="med_periode" placeholder="ex: mars et avril 2025">
+            </div>
+          </div>
+        </div>
+
+        <!-- ONBOARDING -->
+        <div class="form-section" id="form_onboarding">
+          <div class="field-group">
+            <div class="field-label">Nom du nouveau locataire</div>
+            <input type="text" id="ob_nom" placeholder="ex: M. et Mme Dubois">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Adresse du bien loué</div>
+            <input type="text" id="ob_adresse" placeholder="ex: Avenue Louise 150, Apt 4B, 1050 Bruxelles">
+          </div>
+          <div class="row-2">
+            <div class="field-group">
+              <div class="field-label">Date d'entrée</div>
+              <input type="text" id="ob_date" placeholder="ex: 1er juillet 2025">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Loyer mensuel</div>
+              <input type="text" id="ob_loyer" placeholder="ex: 1 200 €/mois">
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Informations complémentaires</div>
+            <textarea id="ob_infos" placeholder="ex: Garage inclus, pas d'animaux, charges eau comprises..." rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- CONVOCATION AG -->
+        <div class="form-section" id="form_convocation_ag">
+          <div class="field-group">
+            <div class="field-label">Nom de la copropriété</div>
+            <input type="text" id="ag_copropr" placeholder="ex: Résidence Les Acacias">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Adresse</div>
+            <input type="text" id="ag_adresse" placeholder="ex: Rue Belliard 28, 1040 Etterbeek">
+          </div>
+          <div class="row-2">
+            <div class="field-group">
+              <div class="field-label">Date & heure</div>
+              <input type="text" id="ag_date" placeholder="ex: 15 juin 2025 à 18h30">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Lieu</div>
+              <input type="text" id="ag_lieu" placeholder="ex: Salle commune, RDC">
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Points à l'ordre du jour</div>
+            <textarea id="ag_odj" placeholder="ex: Approbation des comptes 2024, Budget 2025, Travaux toiture, Questions diverses..." rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- REPONSE PLAINTE -->
+        <div class="form-section" id="form_reponse_plainte">
+          <div class="field-group">
+            <div class="field-label">Nom du plaignant</div>
+            <input type="text" id="pl_nom" placeholder="ex: M. Bernard Lecomte">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Objet de la plainte</div>
+            <textarea id="pl_objet" placeholder="ex: Infiltration d'eau non résolue depuis 3 semaines, dégâts visibles au plafond..." rows="3"></textarea>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Actions déjà entreprises</div>
+            <textarea id="pl_actions" placeholder="ex: Plombier mandaté le 10 mai, devis reçu, travaux planifiés pour le 20 mai..." rows="3"></textarea>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Prochaine étape concrète</div>
+            <input type="text" id="pl_next" placeholder="ex: Intervention plombier le 20 mai entre 9h et 12h">
+          </div>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+          <span>✦</span> Générer le document
+        </button>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon teal-bg">🤖</div>
+        <div><div class="panel-label teal">Document généré par l'IA</div></div>
+      </div>
+      <div class="panel-body">
+        <div class="output-zone">
+          <div class="output-placeholder" id="placeholder">
+            <div class="placeholder-icon">📄</div>
+            <div class="placeholder-text">Remplissez les informations et cliquez sur Générer. Le document apparaîtra ici.</div>
+          </div>
+          <div class="loading" id="loading">
+            <div class="loader-ring"></div>
+            <div class="loading-text">
+              L'IA rédige votre document...
+              <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="output-result" id="result">
+            <div class="result-meta">
+              <div class="result-tag">Document généré</div>
+              <div class="result-time" id="resultTime"></div>
+            </div>
+            <div class="result-box" id="resultBox"></div>
+            <div class="result-actions">
+              <button class="btn-copy" id="copyBtn" onclick="copyResult()">📋 Copier</button>
+              <button class="btn-reset" onclick="reset()">↩ Nouveau</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value">~20s</div><div class="stat-label">Temps de génération</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">−90%</div><div class="stat-label">Temps de rédaction</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">Types de documents</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">Erreur d'oubli</div></div>
+  </div>
+</main>
+
+<footer>Démonstration préparée par <span>Abibo Lengelo Yanick</span> · Consultant IA Indépendant</footer>
+
+<script>
+let currentDoc = 'mise_en_demeure';
+let startTime;
+
+function selectDoc(el, type) {
+  document.querySelectorAll('.doc-type').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('form_' + type).classList.add('active');
+  currentDoc = type;
+  reset();
+}
+
+function showState(state) {
+  document.getElementById('placeholder').style.display = state === 'placeholder' ? 'flex' : 'none';
+  document.getElementById('loading').classList.toggle('visible', state === 'loading');
+  document.getElementById('result').classList.toggle('visible', state === 'result');
+}
+
+function getPrompt() {
+  const today = new Date().toLocaleDateString('fr-BE', {day:'numeric',month:'long',year:'numeric'});
+  if (currentDoc === 'mise_en_demeure') {
+    const loc = document.getElementById('med_locataire').value || '[Locataire]';
+    const adr = document.getElementById('med_adresse').value || '[Adresse]';
+    const mnt = document.getElementById('med_montant').value || '[Montant]';
+    const mot = document.getElementById('med_motif').value;
+    const del = document.getElementById('med_delai').value || '8 jours';
+    const per = document.getElementById('med_periode').value || '[Période]';
+    return `Rédige une lettre de mise en demeure formelle en français pour l'agence immobilière The Keys Group.
+Locataire : ${loc} | Bien : ${adr} | Motif : ${mot} | Montant dû : ${mnt} | Période : ${per} | Délai de régularisation : ${del} | Date : ${today}
+La lettre doit être ferme, juridiquement correcte, mentionner les conséquences (résiliation bail, procédure judiciaire) et se terminer par la signature The Keys Group — Service Contentieux. Format lettre officielle complète.`;
+  }
+  if (currentDoc === 'onboarding') {
+    const nom = document.getElementById('ob_nom').value || '[Locataire]';
+    const adr = document.getElementById('ob_adresse').value || '[Adresse]';
+    const dat = document.getElementById('ob_date').value || '[Date]';
+    const loy = document.getElementById('ob_loyer').value || '[Loyer]';
+    const inf = document.getElementById('ob_infos').value || '';
+    return `Rédige un courrier de bienvenue et d'onboarding complet pour un nouveau locataire en français.
+Locataire : ${nom} | Bien : ${adr} | Date d'entrée : ${dat} | Loyer : ${loy} | Infos : ${inf}
+Inclure : bienvenue chaleureux, rappel des modalités de paiement, contacts d'urgence, règles de base, procédure pour signaler un problème, informations pratiques. Signature The Keys Group — Service Locatif.`;
+  }
+  if (currentDoc === 'convocation_ag') {
+    const cop = document.getElementById('ag_copropr').value || '[Copropriété]';
+    const adr = document.getElementById('ag_adresse').value || '[Adresse]';
+    const dat = document.getElementById('ag_date').value || '[Date]';
+    const lie = document.getElementById('ag_lieu').value || '[Lieu]';
+    const odj = document.getElementById('ag_odj').value || '[Ordre du jour]';
+    return `Rédige une convocation officielle d'Assemblée Générale de copropriété en français, conforme à la législation belge.
+Copropriété : ${cop} | Adresse : ${adr} | Date/heure : ${dat} | Lieu : ${lie} | Ordre du jour : ${odj}
+Mentionner : délai légal de convocation, possibilité de procuration, documents disponibles, quorum nécessaire. Format officiel complet. Signature The Keys Management — Syndic.`;
+  }
+  if (currentDoc === 'reponse_plainte') {
+    const nom = document.getElementById('pl_nom').value || '[Plaignant]';
+    const obj = document.getElementById('pl_objet').value || '[Objet]';
+    const act = document.getElementById('pl_actions').value || '[Actions]';
+    const nxt = document.getElementById('pl_next').value || '[Prochaine étape]';
+    return `Rédige une réponse professionnelle et empathique à une plainte de copropriétaire/locataire en français.
+Plaignant : ${nom} | Problème : ${obj} | Actions déjà entreprises : ${act} | Prochaine étape : ${nxt}
+La réponse doit : accuser réception, montrer que le problème est pris au sérieux, expliquer ce qui a été fait, annoncer la suite concrète avec délai, rassurer. Ton professionnel et bienveillant. Signature The Keys Group.`;
+  }
+}
+
+async function generate() {
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  showState('loading');
+  startTime = Date.now();
+
+  try {
+    const res = await fetch("https://thekeys-proxy.onrender.com/proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: getPrompt() }]
+      })
+    });
+    const data = await res.json();
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const text = data.content?.[0]?.text || "Erreur lors de la génération.";
+    document.getElementById('resultBox').textContent = text;
+    document.getElementById('resultTime').textContent = `Généré en ${elapsed}s`;
+    showState('result');
+  } catch(e) {
+    document.getElementById('resultBox').textContent = "Erreur de connexion. Réessayez.";
+    showState('result');
+  }
+  btn.disabled = false;
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(document.getElementById('resultBox').textContent).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copié !';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copier'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function reset() {
+  showState('placeholder');
+  document.getElementById('resultBox').textContent = '';
+}
+</script>
+</body>
+</html>
