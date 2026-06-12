@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -25,8 +27,6 @@ app.post('/proxy', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-app.get('/', (req, res) => res.send('The Keys Proxy OK'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
