@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Braxel — Démo IA · Réponse automatique aux leads</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #1B2A4C;
+    --navy-soft:  #28406B;
+    --red:        #E2364C;
+    --red-dark:   #C81F39;
+    --white:      #FFFFFF;
+    --bg:         #F4F5F8;
+    --card:       #FFFFFF;
+    --border:     #E4E7EE;
+    --muted:      #6B7280;
+    --text:       #1B2A4C;
+    --success:    #1E9E6B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 48px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-zone { display: flex; align-items: center; gap: 14px; }
+
+  .logo-mark {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .logo-mark::before {
+    content: '';
+    position: absolute;
+    width: 56px; height: 14px;
+    background: var(--red);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-32deg);
+  }
+
+  .logo-text { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 700; color: var(--navy); letter-spacing: 0.3px; }
+  .logo-sub { font-size: 10.5px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+  .logo-sub span { color: var(--red); font-weight: 700; }
+
+  .badge {
+    background: rgba(226,54,76,0.1);
+    color: var(--red-dark);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(226,54,76,0.25);
+  }
+
+  /* ── Main layout ── */
+  main { max-width: 1120px; margin: 0 auto; padding: 52px 24px 80px; }
+
+  .intro { text-align: center; margin-bottom: 44px; }
+
+  .intro-eyebrow {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--red-dark); font-weight: 700; margin-bottom: 14px;
+  }
+
+  .intro-title {
+    font-family: 'Fraunces', serif; font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700; color: var(--navy); line-height: 1.22; margin-bottom: 16px;
+  }
+  .intro-title span { color: var(--red); }
+
+  .intro-desc { font-size: 15px; color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+  /* ── Two-panel ── */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+  @media (max-width: 760px) {
+    .panels { grid-template-columns: 1fr; }
+    header { padding: 16px 20px; }
+    main { padding: 32px 16px 60px; }
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(27,42,76,0.04);
+  }
+
+  .panel-header {
+    padding: 17px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .panel-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .panel-icon.input-icon  { background: rgba(27,42,76,0.07); }
+  .panel-icon.output-icon { background: rgba(30,158,107,0.10); }
+
+  .panel-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .panel-label.navy { color: var(--navy); }
+  .panel-label.green { color: var(--success); }
+
+  .panel-body { padding: 22px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Channel selector ── */
+  .field-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+
+  .channel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .channel-btn {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
+    color: var(--muted); font-size: 12px; font-family: 'Inter', sans-serif; font-weight: 600;
+    padding: 7px 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .channel-btn:hover, .channel-btn.active {
+    background: var(--navy); border-color: var(--navy); color: var(--white);
+  }
+
+  /* ── Examples ── */
+  .examples-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .examples { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+
+  .example-chip {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+    padding: 10px 14px; font-size: 12.5px; color: var(--text); cursor: pointer;
+    transition: all 0.2s ease; text-align: left; line-height: 1.4;
+  }
+  .example-chip:hover { border-color: var(--red); background: rgba(226,54,76,0.05); transform: translateX(3px); }
+
+  .example-chip .chip-tag {
+    font-size: 10px; color: var(--red-dark); font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 3px;
+  }
+
+  /* ── Textarea ── */
+  textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.65;
+    padding: 14px 16px; resize: vertical; min-height: 140px; outline: none; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--red); }
+  textarea::placeholder { color: #9AA3B5; }
+
+  /* ── Generate button ── */
+  .btn-generate {
+    width: 100%; background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
+    color: var(--white); border: none; border-radius: 10px; font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.5px; padding: 15px 24px;
+    cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center;
+    justify-content: center; gap: 10px; margin-top: 4px;
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(226,54,76,0.28); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── Output ── */
+  .output-zone { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  .output-placeholder {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 40px 20px; border: 1.5px dashed var(--border); border-radius: 12px;
+    text-align: center; color: var(--muted); min-height: 280px;
+  }
+  .placeholder-icon { font-size: 34px; opacity: 0.5; }
+  .placeholder-text { font-size: 13px; line-height: 1.6; max-width: 230px; }
+
+  .output-result { display: none; flex-direction: column; gap: 14px; }
+  .output-result.visible { display: flex; }
+
+  .result-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  .tag-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .pill {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 20px;
+  }
+  .pill-profil { background: rgba(27,42,76,0.08); color: var(--navy); }
+  .pill-urgence-faible { background: rgba(30,158,107,0.10); color: var(--success); }
+  .pill-urgence-moyenne { background: rgba(217,119,6,0.10); color: #B45309; }
+  .pill-urgence-elevee { background: rgba(226,54,76,0.10); color: var(--red-dark); }
+
+  .result-time { font-size: 11px; color: var(--muted); }
+
+  .result-box {
+    background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--success);
+    border-radius: 10px; padding: 18px 20px; font-size: 13.5px; line-height: 1.72; color: var(--text);
+    white-space: pre-wrap; word-break: break-word; min-height: 190px; max-height: 360px; overflow-y: auto;
+  }
+  .result-box::-webkit-scrollbar { width: 4px; }
+  .result-box::-webkit-scrollbar-track { background: transparent; }
+  .result-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .result-actions { display: flex; gap: 10px; }
+  .btn-copy, .btn-reset {
+    flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .btn-copy:hover { border-color: var(--success); color: var(--success); }
+  .btn-reset:hover { border-color: var(--red); color: var(--red-dark); }
+  .btn-copy.copied { border-color: var(--success); color: var(--success); }
+
+  /* ── Loading ── */
+  .loading { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 48px 20px; min-height: 280px; }
+  .loading.visible { display: flex; }
+
+  .loader-ring {
+    width: 46px; height: 46px; border: 3px solid var(--border); border-top-color: var(--red);
+    border-radius: 50%; animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.6; }
+  .loading-steps { display: flex; gap: 6px; margin-top: 4px; justify-content: center; }
+  .loading-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: bounce 1.2s ease infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: flex; align-items: center; justify-content: center; gap: 32px;
+    margin-top: 40px; padding: 22px 32px; background: var(--navy); border-radius: 14px;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: var(--white); line-height: 1; }
+  .stat-label { font-size: 11px; color: #AEB9D1; margin-top: 4px; letter-spacing: 0.4px; }
+  .stat-divider { width: 1px; height: 34px; background: rgba(255,255,255,0.15); }
+
+  @media (max-width: 700px) {
+    .stat-divider { display: none; }
+    .stats-bar { gap: 22px; }
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center; padding: 22px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); letter-spacing: 0.3px; background: var(--white);
+  }
+  footer span { color: var(--red-dark); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-zone">
+    <div class="logo-mark"></div>
+    <div>
+      <div class="logo-text">BRAXEL</div>
+      <div class="logo-sub">L'IMMOBILIER SELON <span>VOUS</span></div>
+    </div>
+  </div>
+  <div class="badge">⚡ Démo en direct</div>
+</header>
+
+<main>
+  <div class="intro">
+    <div class="intro-eyebrow">Solution · Réponse automatique aux leads</div>
+    <h1 class="intro-title">Un message. <span>Quelques secondes.</span><br>Une réponse Braxel.</h1>
+    <p class="intro-desc">Collez n'importe quelle demande reçue — site, Immoweb, Facebook. L'IA identifie le profil du contact et rédige une réponse chaleureuse et personnalisée, prête à être validée et envoyée.</p>
+  </div>
+
+  <div class="panels">
+
+    <!-- PANNEAU INPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon input-icon">📨</div>
+        <div class="panel-label navy">Message reçu</div>
+      </div>
+      <div class="panel-body">
+
+        <div>
+          <div class="field-label">Canal</div>
+          <div class="channel-row" id="channelRow">
+            <button class="channel-btn active" data-channel="Site web Braxel" onclick="setChannel(this)">Site web</button>
+            <button class="channel-btn" data-channel="Immoweb" onclick="setChannel(this)">Immoweb</button>
+            <button class="channel-btn" data-channel="Facebook Messenger" onclick="setChannel(this)">Facebook</button>
+            <button class="channel-btn" data-channel="Email direct" onclick="setChannel(this)">Email</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="examples-label">Exemples rapides</div>
+          <div class="examples">
+            <button class="example-chip" onclick="loadExample(0)">
+              <span class="chip-tag">Acheteur</span>
+              Intéressé par une maison à Rhode-Saint-Genèse, demande de visite ce week-end...
+            </button>
+            <button class="example-chip" onclick="loadExample(1)">
+              <span class="chip-tag">Vendeur</span>
+              Souhaite vendre son appartement à Waterloo, demande une estimation...
+            </button>
+            <button class="example-chip" onclick="loadExample(2)">
+              <span class="chip-tag">Locataire</span>
+              Recherche une maison avec jardin à louer pour septembre, budget précisé...
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label">Contenu du message</div>
+          <textarea id="messageInput" placeholder="Collez ici le message reçu du contact..." rows="6"></textarea>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+          <span>✦</span> Générer la réponse
+        </button>
+
+      </div>
+    </div>
+
+    <!-- PANNEAU OUTPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon output-icon">🤖</div>
+        <div class="panel-label green">Analyse &amp; réponse IA</div>
+      </div>
+      <div class="panel-body">
+        <div class="output-zone">
+
+          <div class="output-placeholder" id="placeholder">
+            <div class="placeholder-icon">✦</div>
+            <div class="placeholder-text">Le profil détecté et la réponse personnalisée apparaîtront ici en quelques secondes.</div>
+          </div>
+
+          <div class="loading" id="loading">
+            <div class="loader-ring"></div>
+            <div class="loading-text">
+              L'IA lit le message et rédige la réponse...
+              <div class="loading-steps">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="output-result" id="result">
+            <div class="result-meta">
+              <div class="tag-group" id="tagGroup"></div>
+              <div class="result-time" id="resultTime"></div>
+            </div>
+            <div class="result-box" id="resultBox"></div>
+            <div class="result-actions">
+              <button class="btn-copy" id="copyBtn" onclick="copyResult()">📋 Copier la réponse</button>
+              <button class="btn-reset" onclick="reset()">↩ Nouveau message</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value">~8s</div><div class="stat-label">Temps de génération</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">24/7</div><div class="stat-label">Disponibilité réelle</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">3</div><div class="stat-label">Canaux unifiés</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Validé avant envoi</div></div>
+  </div>
+
+</main>
+
+<footer>
+  Démonstration préparée par <span>Abibo Lengelo Yanick</span> · Consultant IA Indépendant — pour Braxel
+</footer>
+
+<script>
+  const EXAMPLES = [
+    `Bonjour,
+
+Je suis tombé sur votre annonce pour la propriété quartier Lequime à Rhode-Saint-Genèse, elle a l'air superbe. Serait-il possible d'organiser une visite ce week-end, samedi ou dimanche après-midi ? Je suis disponible aux deux.
+
+Merci d'avance,
+Julien M.`,
+
+    `Bonjour,
+
+Je possède un appartement 2 chambres à Waterloo que j'envisage de mettre en vente dans les prochains mois. Je n'ai pas encore d'estimation précise et j'aimerais comprendre comment vous travaillez avant de me décider.
+
+Pouvez-vous me recontacter ?
+
+Sophie L.`,
+
+    `Bonsoir,
+
+Je cherche à louer une maison avec jardin pour une entrée en septembre, idéalement à Waterloo ou dans les environs. Budget maximum 1800€/mois charges comprises. Nous sommes un couple avec un enfant.
+
+Avez-vous des biens correspondant à cette recherche ?
+
+Merci,
+Karim & Nadia B.`
+  ];
+
+  let selectedChannel = "Site web Braxel";
+  let startTime;
+
+  function loadExample(i) {
+    document.getElementById('messageInput').value = EXAMPLES[i];
+  }
+
+  function setChannel(btn) {
+    document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedChannel = btn.dataset.channel;
+  }
+
+  function showState(state) {
+    document.getElementById('placeholder').style.display = state === 'placeholder' ? 'flex' : 'none';
+    document.getElementById('loading').classList.toggle('visible', state === 'loading');
+    document.getElementById('result').classList.toggle('visible', state === 'result');
+  }
+
+  function urgenceClass(urgence) {
+    const u = (urgence || '').toLowerCase();
+    if (u.includes('élev') || u.includes('elev')) return 'pill-urgence-elevee';
+    if (u.includes('moy')) return 'pill-urgence-moyenne';
+    return 'pill-urgence-faible';
+  }
+
+  async function generate() {
+    const message = document.getElementById('messageInput').value.trim();
+    if (!message) {
+      const ta = document.getElementById('messageInput');
+      ta.style.borderColor = 'var(--red)';
+      ta.placeholder = '⚠ Veuillez coller un message avant de générer...';
+      setTimeout(() => {
+        ta.style.borderColor = '';
+        ta.placeholder = 'Collez ici le message reçu du contact...';
+      }, 2000);
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    showState('loading');
+    startTime = Date.now();
+
+    const prompt = `Tu es l'assistante de première réponse de Braxel, une agence immobilière à Waterloo (Chaussée de Tervuren 149/3, 1410 Waterloo), active sur le Brabant wallon et Bruxelles. Braxel se positionne sur la confiance, le suivi personnalisé et une disponibilité réelle, y compris en soirée et le week-end. Sa philosophie : "L'immobilier selon vous".
+
+Voici un message reçu via ${selectedChannel} :
+"""
+${message}
+"""
+
+Analyse ce message puis réponds UNIQUEMENT avec un objet JSON valide, sans markdown et sans texte autour, au format exact :
+{"profil": "Acheteur ou Vendeur ou Locataire ou Autre", "urgence": "Faible ou Moyenne ou Élevée", "reponse": "le texte complet de la réponse à envoyer"}
+
+La réponse (champ "reponse") doit être en français, accuser réception avec chaleur, montrer que la demande est prise en charge personnellement, proposer une prochaine étape concrète (rappel, rendez-vous, visite), rester courte (6 à 10 phrases) et se terminer par "L'équipe Braxel". Ne mentionne jamais qu'il s'agit d'une réponse automatique ou générée par une IA.`;
+
+    try {
+      const res = await fetch("https://thekeys-proxy.onrender.com/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 800,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await res.json();
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      let raw = data.content?.[0]?.text || "";
+      raw = raw.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+
+      const tagGroup = document.getElementById('tagGroup');
+      if (parsed && parsed.reponse) {
+        tagGroup.innerHTML =
+          `<span class="pill pill-profil">${parsed.profil || 'Profil indéterminé'}</span>` +
+          `<span class="pill ${urgenceClass(parsed.urgence)}">Urgence ${parsed.urgence || '—'}</span>`;
+        document.getElementById('resultBox').textContent = parsed.reponse;
+      } else {
+        tagGroup.innerHTML = `<span class="pill pill-profil">Réponse générée</span>`;
+        document.getElementById('resultBox').textContent = raw || "Erreur lors de la génération. Veuillez réessayer.";
+      }
+
+      document.getElementById('resultTime').textContent = `Généré en ${elapsed}s`;
+      showState('result');
+
+    } catch (err) {
+      document.getElementById('tagGroup').innerHTML = `<span class="pill pill-urgence-elevee">Erreur</span>`;
+      document.getElementById('resultBox').textContent = "Erreur de connexion au serveur. Vérifiez la connexion internet et réessayez (le serveur peut prendre 30-60s à se réveiller s'il était inactif).";
+      showState('result');
+    }
+
+    btn.disabled = false;
+  }
+
+  function copyResult() {
+    const text = document.getElementById('resultBox').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copier la réponse';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function reset() {
+    document.getElementById('messageInput').value = '';
+    document.getElementById('resultBox').textContent = '';
+    showState('placeholder');
+  }
+</script>
+
+</body>
+</html>
