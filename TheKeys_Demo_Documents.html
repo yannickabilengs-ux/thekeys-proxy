@@ -413,6 +413,7 @@ function getPrompt() {
     const del = document.getElementById('med_delai').value || '8 jours';
     const per = document.getElementById('med_periode').value || '[Période]';
     return `Rédige une lettre de mise en demeure formelle en français pour l'agence immobilière The Keys Group.
+En-tête expéditeur : The Keys & The Keys Management, Glaverbel Building, Chaussée de la Hulpe 166, 1170 Bruxelles. Tél: 02/852.71.56 — info@thekeys.be
 Locataire : ${loc} | Bien : ${adr} | Motif : ${mot} | Montant dû : ${mnt} | Période : ${per} | Délai de régularisation : ${del} | Date : ${today}
 La lettre doit être ferme, juridiquement correcte, mentionner les conséquences (résiliation bail, procédure judiciaire) et se terminer par la signature The Keys Group — Service Contentieux. Format lettre officielle complète.`;
   }
@@ -423,6 +424,7 @@ La lettre doit être ferme, juridiquement correcte, mentionner les conséquences
     const loy = document.getElementById('ob_loyer').value || '[Loyer]';
     const inf = document.getElementById('ob_infos').value || '';
     return `Rédige un courrier de bienvenue et d'onboarding complet pour un nouveau locataire en français.
+En-tête expéditeur : The Keys & The Keys Management, Glaverbel Building, Chaussée de la Hulpe 166, 1170 Bruxelles. Tél: 02/852.71.56 — info@thekeys.be
 Locataire : ${nom} | Bien : ${adr} | Date d'entrée : ${dat} | Loyer : ${loy} | Infos : ${inf}
 Inclure : bienvenue chaleureux, rappel des modalités de paiement, contacts d'urgence, règles de base, procédure pour signaler un problème, informations pratiques. Signature The Keys Group — Service Locatif.`;
   }
@@ -433,6 +435,7 @@ Inclure : bienvenue chaleureux, rappel des modalités de paiement, contacts d'ur
     const lie = document.getElementById('ag_lieu').value || '[Lieu]';
     const odj = document.getElementById('ag_odj').value || '[Ordre du jour]';
     return `Rédige une convocation officielle d'Assemblée Générale de copropriété en français, conforme à la législation belge.
+En-tête expéditeur : The Keys & The Keys Management, Glaverbel Building, Chaussée de la Hulpe 166, 1170 Bruxelles. Tél: 02/852.71.56 — info@thekeys.be
 Copropriété : ${cop} | Adresse : ${adr} | Date/heure : ${dat} | Lieu : ${lie} | Ordre du jour : ${odj}
 Mentionner : délai légal de convocation, possibilité de procuration, documents disponibles, quorum nécessaire. Format officiel complet. Signature The Keys Management — Syndic.`;
   }
@@ -442,6 +445,7 @@ Mentionner : délai légal de convocation, possibilité de procuration, document
     const act = document.getElementById('pl_actions').value || '[Actions]';
     const nxt = document.getElementById('pl_next').value || '[Prochaine étape]';
     return `Rédige une réponse professionnelle et empathique à une plainte de copropriétaire/locataire en français.
+En-tête expéditeur : The Keys & The Keys Management, Glaverbel Building, Chaussée de la Hulpe 166, 1170 Bruxelles. Tél: 02/852.71.56 — info@thekeys.be
 Plaignant : ${nom} | Problème : ${obj} | Actions déjà entreprises : ${act} | Prochaine étape : ${nxt}
 La réponse doit : accuser réception, montrer que le problème est pris au sérieux, expliquer ce qui a été fait, annoncer la suite concrète avec délai, rassurer. Ton professionnel et bienveillant. Signature The Keys Group.`;
   }
