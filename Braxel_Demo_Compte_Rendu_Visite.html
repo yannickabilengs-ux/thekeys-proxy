@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Braxel — Démo IA · Compte-rendu de visite</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #1B2A4C;
+    --navy-soft:  #28406B;
+    --red:        #E2364C;
+    --red-dark:   #C81F39;
+    --white:      #FFFFFF;
+    --bg:         #F4F5F8;
+    --card:       #FFFFFF;
+    --border:     #E4E7EE;
+    --muted:      #6B7280;
+    --text:       #1B2A4C;
+    --success:    #1E9E6B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 48px; background: var(--white); border-bottom: 1px solid var(--border);
+  }
+
+  .logo-zone { display: flex; align-items: center; gap: 14px; }
+  .logo-mark { width: 38px; height: 38px; border-radius: 9px; background: var(--navy); position: relative; overflow: hidden; flex-shrink: 0; }
+  .logo-mark::before { content: ''; position: absolute; width: 56px; height: 14px; background: var(--red); top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-32deg); }
+
+  .logo-text { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 700; color: var(--navy); letter-spacing: 0.3px; }
+  .logo-sub { font-size: 10.5px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+  .logo-sub span { color: var(--red); font-weight: 700; }
+
+  .badge {
+    background: rgba(226,54,76,0.1); color: var(--red-dark); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 16px; border-radius: 20px;
+    border: 1px solid rgba(226,54,76,0.25);
+  }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 52px 24px 80px; }
+  .intro { text-align: center; margin-bottom: 44px; }
+  .intro-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--red-dark); font-weight: 700; margin-bottom: 14px; }
+  .intro-title { font-family: 'Fraunces', serif; font-size: clamp(28px, 4vw, 40px); font-weight: 700; color: var(--navy); line-height: 1.22; margin-bottom: 16px; }
+  .intro-title span { color: var(--red); }
+  .intro-desc { font-size: 15px; color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 760px) { .panels { grid-template-columns: 1fr; } header { padding: 16px 20px; } main { padding: 32px 16px 60px; } }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(27,42,76,0.04); }
+  .panel-header { padding: 17px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .panel-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .panel-icon.input-icon { background: rgba(27,42,76,0.07); }
+  .panel-icon.output-icon { background: rgba(30,158,107,0.10); }
+  .panel-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .panel-label.navy { color: var(--navy); }
+  .panel-label.green { color: var(--success); }
+  .panel-body { padding: 22px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+  .field-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+
+  .text-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+    color: var(--text); font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
+  }
+  .text-input:focus { border-color: var(--red); }
+  .text-input::placeholder { color: #9AA3B5; }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .channel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .channel-btn {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 20px; color: var(--muted);
+    font-size: 12px; font-family: 'Inter', sans-serif; font-weight: 600; padding: 7px 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .channel-btn:hover, .channel-btn.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+  .examples-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .examples { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .example-chip {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 10px 14px;
+    font-size: 12.5px; color: var(--text); cursor: pointer; transition: all 0.2s ease; text-align: left; line-height: 1.4;
+  }
+  .example-chip:hover { border-color: var(--red); background: rgba(226,54,76,0.05); transform: translateX(3px); }
+  .example-chip .chip-tag { font-size: 10px; color: var(--red-dark); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 3px; }
+
+  textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.65;
+    padding: 14px 16px; resize: vertical; min-height: 120px; outline: none; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--red); }
+  textarea::placeholder { color: #9AA3B5; }
+
+  .btn-generate {
+    width: 100%; background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%); color: var(--white);
+    border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.5px; padding: 15px 24px; cursor: pointer; transition: all 0.25s ease;
+    display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 4px;
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(226,54,76,0.28); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .output-zone { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .output-placeholder {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: 40px 20px; border: 1.5px dashed var(--border); border-radius: 12px; text-align: center; color: var(--muted); min-height: 320px;
+  }
+  .placeholder-icon { font-size: 34px; opacity: 0.5; }
+  .placeholder-text { font-size: 13px; line-height: 1.6; max-width: 230px; }
+
+  .output-result { display: none; flex-direction: column; gap: 14px; }
+  .output-result.visible { display: flex; }
+  .result-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .pill { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 5px 12px; border-radius: 20px; background: rgba(27,42,76,0.08); color: var(--navy); }
+  .result-time { font-size: 11px; color: var(--muted); }
+
+  .result-box {
+    background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--success); border-radius: 10px;
+    padding: 18px 20px; font-size: 13.5px; line-height: 1.72; color: var(--text); white-space: pre-wrap;
+    word-break: break-word; min-height: 230px; max-height: 420px; overflow-y: auto;
+  }
+  .result-box::-webkit-scrollbar { width: 4px; }
+  .result-box::-webkit-scrollbar-track { background: transparent; }
+  .result-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .result-actions { display: flex; gap: 10px; }
+  .btn-copy, .btn-reset {
+    flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; padding: 10px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .btn-copy:hover { border-color: var(--success); color: var(--success); }
+  .btn-reset:hover { border-color: var(--red); color: var(--red-dark); }
+  .btn-copy.copied { border-color: var(--success); color: var(--success); }
+
+  .loading { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 48px 20px; min-height: 320px; }
+  .loading.visible { display: flex; }
+  .loader-ring { width: 46px; height: 46px; border: 3px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.6; }
+  .loading-steps { display: flex; gap: 6px; margin-top: 4px; justify-content: center; }
+  .loading-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: bounce 1.2s ease infinite; }
+  .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+
+  .stats-bar { display: flex; align-items: center; justify-content: center; gap: 32px; margin-top: 40px; padding: 22px 32px; background: var(--navy); border-radius: 14px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-value { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: var(--white); line-height: 1; }
+  .stat-label { font-size: 11px; color: #AEB9D1; margin-top: 4px; letter-spacing: 0.4px; }
+  .stat-divider { width: 1px; height: 34px; background: rgba(255,255,255,0.15); }
+  @media (max-width: 700px) { .stat-divider { display: none; } .stats-bar { gap: 22px; } }
+
+  footer { text-align: center; padding: 22px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); letter-spacing: 0.3px; background: var(--white); }
+  footer span { color: var(--red-dark); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-zone">
+    <div class="logo-mark"></div>
+    <div>
+      <div class="logo-text">BRAXEL</div>
+      <div class="logo-sub">L'IMMOBILIER SELON <span>VOUS</span></div>
+    </div>
+  </div>
+  <div class="badge">⚡ Démo en direct</div>
+</header>
+
+<main>
+  <div class="intro">
+    <div class="intro-eyebrow">Solution · Compte-rendu de visite automatisé</div>
+    <h1 class="intro-title">Des notes prises sur le terrain.<br>Un rapport <span>prêt à envoyer</span>.</h1>
+    <p class="intro-desc">Notez en quelques mots ce qui s'est dit pendant la visite. L'IA structure tout en un compte-rendu clair pour le propriétaire — dans le même esprit de suivi personnalisé qui fait la réputation de Braxel.</p>
+  </div>
+
+  <div class="panels">
+
+    <!-- PANNEAU INPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon input-icon">📝</div>
+        <div class="panel-label navy">Notes de visite</div>
+      </div>
+      <div class="panel-body">
+
+        <div class="row-2">
+          <div>
+            <div class="field-label">Bien visité</div>
+            <input class="text-input" id="bienInput" type="text" placeholder="Ex: Maison Joli-Bois, Waterloo">
+          </div>
+          <div>
+            <div class="field-label">Profil du visiteur</div>
+            <div class="channel-row" id="profilRow">
+              <button class="channel-btn active" data-profil="Acheteur sérieux" onclick="setProfil(this)">Sérieux</button>
+              <button class="channel-btn" data-profil="Simple curieux" onclick="setProfil(this)">Curieux</button>
+              <button class="channel-btn" data-profil="Investisseur" onclick="setProfil(this)">Investisseur</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="examples-label">Exemples rapides</div>
+          <div class="examples">
+            <button class="example-chip" onclick="loadExample(0)">
+              <span class="chip-tag">Visite positive</span>
+              Très intéressé, aime la luminosité, hésite sur le prix du jardin...
+            </button>
+            <button class="example-chip" onclick="loadExample(1)">
+              <span class="chip-tag">Réserves</span>
+              Cuisine à refaire selon lui, bruit de la rue, va réfléchir...
+            </button>
+            <button class="example-chip" onclick="loadExample(2)">
+              <span class="chip-tag">Coup de cœur</span>
+              Adore tout, demande déjà les délais possibles pour une offre...
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label">Notes brutes (vrac, comme sur le terrain)</div>
+          <textarea id="notesInput" placeholder="Ex: aime beaucoup le salon et la terrasse, trouve la cuisine un peu petite, pose des questions sur les charges, va réfléchir ce week-end..." rows="6"></textarea>
+        </div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generate()">
+          <span>✦</span> Générer le compte-rendu
+        </button>
+
+      </div>
+    </div>
+
+    <!-- PANNEAU OUTPUT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon output-icon">🤖</div>
+        <div class="panel-label green">Compte-rendu généré</div>
+      </div>
+      <div class="panel-body">
+        <div class="output-zone">
+
+          <div class="output-placeholder" id="placeholder">
+            <div class="placeholder-icon">✦</div>
+            <div class="placeholder-text">Le compte-rendu structuré, prêt à envoyer au propriétaire, apparaîtra ici.</div>
+          </div>
+
+          <div class="loading" id="loading">
+            <div class="loader-ring"></div>
+            <div class="loading-text">
+              L'IA structure le compte-rendu...
+              <div class="loading-steps">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="output-result" id="result">
+            <div class="result-meta">
+              <span class="pill" id="resultPill">Compte-rendu</span>
+              <div class="result-time" id="resultTime"></div>
+            </div>
+            <div class="result-box" id="resultBox"></div>
+            <div class="result-actions">
+              <button class="btn-copy" id="copyBtn" onclick="copyResult()">📋 Copier le rapport</button>
+              <button class="btn-reset" onclick="reset()">↩ Nouvelle visite</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value">~10s</div><div class="stat-label">Temps de rédaction</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">Notes oubliées</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Ton Braxel respecté</div></div>
+  </div>
+
+</main>
+
+<footer>
+  Démonstration préparée par <span>Abibo Lengelo Yanick</span> · Consultant IA Indépendant — pour Braxel
+</footer>
+
+<script>
+  const EXAMPLES = [
+    "Très bonne visite. Le couple a adoré la luminosité du salon et la terrasse exposée sud. Petite hésitation sur le prix vu la taille du jardin, ils comparent avec une autre maison à Rhode-Saint-Genèse. Veulent revenir une 2e fois avec leurs parents.",
+    "Visite correcte mais sans coup de cœur immédiat. Le monsieur trouve la cuisine à refaire entièrement et s'inquiète du bruit de la chaussée le matin. La dame était plus enthousiaste sur les chambres à l'étage. Ils disent vouloir réfléchir, pas de retour précis annoncé.",
+    "Coup de cœur total dès l'entrée. Posent déjà des questions sur le délai pour faire une offre et sur la date de disponibilité du bien. Très intéressés par le jardin et le garage double. Veulent revenir avec un architecte cette semaine pour valider un projet d'extension."
+  ];
+
+  let selectedProfil = "Acheteur sérieux";
+
+  function loadExample(i) { document.getElementById('notesInput').value = EXAMPLES[i]; }
+
+  function setProfil(btn) {
+    document.querySelectorAll('#profilRow .channel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedProfil = btn.dataset.profil;
+  }
+
+  function showState(state) {
+    document.getElementById('placeholder').style.display = state === 'placeholder' ? 'flex' : 'none';
+    document.getElementById('loading').classList.toggle('visible', state === 'loading');
+    document.getElementById('result').classList.toggle('visible', state === 'result');
+  }
+
+  async function generate() {
+    const bien = document.getElementById('bienInput').value.trim() || "le bien visité";
+    const notes = document.getElementById('notesInput').value.trim();
+
+    if (!notes) {
+      const ta = document.getElementById('notesInput');
+      ta.style.borderColor = 'var(--red)';
+      ta.placeholder = '⚠ Veuillez ajouter quelques notes avant de générer...';
+      setTimeout(() => { ta.style.borderColor = ''; ta.placeholder = "Ex: aime beaucoup le salon et la terrasse, trouve la cuisine un peu petite, pose des questions sur les charges, va réfléchir ce week-end..."; }, 2000);
+      return;
+    }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    showState('loading');
+    const startTime = Date.now();
+
+    const prompt = `Tu rédiges, pour le compte de Braxel (agence immobilière à Waterloo, "L'immobilier selon vous"), un compte-rendu de visite à envoyer au propriétaire après la visite d'un acheteur potentiel.
+
+Bien concerné : ${bien}
+Profil du visiteur : ${selectedProfil}
+
+Notes brutes prises par l'agent pendant ou juste après la visite :
+"""
+${notes}
+"""
+
+Rédige un compte-rendu en français, professionnel mais chaleureux, structuré avec ces sections claires (sans markdown, juste des titres en majuscules suivis d'un saut de ligne) :
+RÉSUMÉ DE LA VISITE
+POINTS FORTS RELEVÉS
+POINTS DE VIGILANCE
+PROCHAINE ÉTAPE RECOMMANDÉE
+
+Termine par "L'équipe Braxel". Reste concret et synthétique, sans répéter mot pour mot les notes brutes — reformule-les en langage professionnel. Réponds uniquement avec le texte du compte-rendu, sans introduction ni explication.`;
+
+    try {
+      const res = await fetch("https://thekeys-proxy.onrender.com/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 900,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      const data = await res.json();
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const text = data.content?.[0]?.text || "Erreur lors de la génération. Veuillez réessayer.";
+
+      document.getElementById('resultBox').textContent = text;
+      document.getElementById('resultTime').textContent = `Généré en ${elapsed}s`;
+      showState('result');
+
+    } catch (err) {
+      document.getElementById('resultBox').textContent = "Erreur de connexion au serveur. Vérifiez la connexion internet et réessayez (le serveur peut prendre 30-60s à se réveiller s'il était inactif).";
+      showState('result');
+    }
+
+    btn.disabled = false;
+  }
+
+  function copyResult() {
+    const text = document.getElementById('resultBox').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 Copier le rapport'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function reset() {
+    document.getElementById('notesInput').value = '';
+    document.getElementById('bienInput').value = '';
+    document.getElementById('resultBox').textContent = '';
+    showState('placeholder');
+  }
+</script>
+
+</body>
+</html>
